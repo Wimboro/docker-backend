@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${CONTAINER_NAME:-finance-tracker-backend}
+    ports:
+      - "${HOST_PORT:-4000}:${CONTAINER_PORT:-4000}"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=${CONTAINER_PORT:-4000}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS:-/app/credentials/credentials.json}
+    volumes:
+      - ${CREDENTIALS_HOST_PATH:-./credentials}:${CREDENTIALS_CONTAINER_PATH:-/app/credentials}:ro
+    networks:
+      - ${NETWORK_NAME:-finance-tracker-network}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:${CONTAINER_PORT:-4000}/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on: []
+
+networks:
+  finance-tracker-network:
+    name: ${NETWORK_NAME:-finance-tracker-network}
+    driver: bridge
+
+volumes:
+  credentials:
+    driver: local 
