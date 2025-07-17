@@ -126,4 +126,5 @@ credentials.json
 # Build artifacts
 build/
 dist/
-out/ 
+out/
+.cursor/
